@@ -4,7 +4,7 @@ import numpy as np
 LOGGER_ID = "ETL"
 
 LOG_FILE= 'cafcoding'
-LOG_DIR = '/content/drive/MyDrive/CAFcoding/notebook'
+LOG_DIR = '.'
 
 workspace_coordenates = {'LAT_MIN': 41, 
                          'LAT_MAX': 44,

@@ -7,7 +7,7 @@ class AWS(object):
         self.path_config= path_config
         self.fs = s3fs.S3FileSystem()
         
-    def generate_session_file(service_name,key_id,secret_key,region_name, path):
+    def generate_session_file(self,service_name,key_id,secret_key,region_name):
         text = f'''
                 [default]
                 service_name= s3
@@ -15,7 +15,7 @@ class AWS(object):
                 aws_secret_access_key = {secret_key}
                 region_name= {region_name}
                 ''' 
-        with open(path, 'w') as f:
+        with open(self.path_config, 'w') as f:
             f.write(text)
     
     def set_credentials_in_env(self):

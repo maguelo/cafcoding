@@ -17,6 +17,7 @@ setup(name='cafcoding',
                         'srtm.py',
                         's3fs',
                         'numpy',
-                        'pandas'],
+                        'pandas',
+                        'seaborn'],
       dependency_links=['http://github.com/tkrajina/srtm.py/tarball/master#egg=srtm.py-0.3.7']
       )
