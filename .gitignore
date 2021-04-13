@@ -1,7 +1,8 @@
 .DS_Store
 .vscode
 notebook
-
+*.ipynb
+*.ini
 
 
 # Byte-compiled / optimized / DLL files
