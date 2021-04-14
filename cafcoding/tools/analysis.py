@@ -5,14 +5,15 @@ def correlation(df, cols_2_ignore=[]):
     return np.abs(df.drop(cols_2_ignore, axis=1).corr())
     
     
-def df_derived_by_shift(df,lag=0,ignore_columns=[]):
+def df_derived_by_shift(df,lag=0,skip_columns=[],ignore_columns=[]):
     df = df.copy()
+    df = df.drop(ignore_columns,axis=1)
     if not lag:
         return df
     cols ={}
     for i in range(1,lag+1):
         for x in list(df.columns):
-            if x not in ignore_columns:
+            if x not in skip_columns:
                 if not x in cols:
                     cols[x] = ['{}_{}'.format(x, i)]
                 else:
