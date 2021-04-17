@@ -98,3 +98,53 @@ def create_model(input_dim, layers, dropout=None, batch_normalization = False, r
         model.add(Dense(1, activation="sigmoid"))
     return model
 
+
+
+    
+
+def train_model(train_data, val_data, params, model_conf, filename = None):
+    logger.debug('Train model - params: {}'.format(str(params)))
+    logger.debug('Train model - model_conf: {}'.format(str(model_conf)))
+                 
+    X_train, y_train = train_data
+    X_val, y_val = val_data
+    model = create_model(X_train.shape[1], 
+                         params['layers'], 
+                         dropout=params.get('dropout',0.0), 
+                         batch_normalization=params.get('batch_normalization',False),
+                         regress=True)
+    
+    callback_list = []
+
+    if  model_conf.get('early_stopping', None) is not None:
+    # patient early stopping
+        early_stopping = EarlyStopping(monitor=model_conf['early_stopping'].get('monitor','val_loss'), mode='min', verbose=model_conf['early_stopping'].get('verbose',1), patience=model_conf['early_stopping'].get('monitor_patience',15))
+        callback_list.append(early_stopping)
+    
+    if filename is not None:
+        logger.info(f'Checkpoint model in {filename}')
+        model_checkpoint = ModelCheckpoint(filename, 
+                                           monitor=model_conf['model_checkpoint'].get('monitor','val_loss'), 
+                                           mode='min', 
+                                           verbose=model_conf['model_checkpoint'].get('verbose',1), 
+                                           save_best_only=model_conf['model_checkpoint'].get('save_best',True))
+        
+        callback_list.append(model_checkpoint)
+    
+    # compile the model using mean absolute percentage error as our loss,
+    # implying that we seek to minimize the absolute percentage difference
+    # between our target *predictions* and the *actual prices*
+    opt = Adam(lr=params["lr"], decay=params["decay"])
+    model.compile(loss=model_conf['model'].get('loss_func',"mean_absolute_percentage_error"), 
+                  optimizer=opt,
+                  metrics=model_conf['model'].get('metrics',None))
+
+    # train the model
+    logger.info("[INFO] training model...")
+    
+    history =model.fit(x=X_train, y=y_train,
+            callbacks=callback_list,
+            validation_data=(X_val, y_val),
+            epochs=model_conf['model'].get('epochs',200), batch_size=params.get("batch_size",64))
+
+    return history, early_stopping.best

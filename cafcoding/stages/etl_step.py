@@ -9,7 +9,7 @@ import numpy as np
 import logging 
 logger = logging.getLogger(constants.LOGGER_ID)
 
-ETL_VERSION = "1.1.1"
+ETL_VERSION = "1.2.0"
 
 ABS_COLUMNS = ['TCU1_Axle1Speed','TCU1_Axle2Speed','TCU1_ElecEffApp',
     'TCU2_Axle1Speed','TCU2_Axle2Speed','TCU2_ElecEffApp',
