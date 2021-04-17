@@ -1,3 +1,5 @@
+import cafcoding.constants as constants
+
 import numpy as np
 import pandas as pd
 import sys
@@ -5,8 +7,7 @@ import math
 import geopy.distance 
 from geographiclib.geodesic import Geodesic
 import logging 
-
-logger = logging.getLogger('ETL')
+logger = logging.getLogger(constants.LOGGER_ID)
 
 from cafcoding.constants import workspace_coordenates as ws_coord
 from cafcoding.constants import PLC_MCP_CATEGORICAL
@@ -15,14 +16,14 @@ def filter_dataframe_by_date(df, field,min_date, max_date):
     return df[df[field].isin(pd.date_range(min_date, max_date))]
 
 def calculate_distance(latitud, longitud, latitud_1, longitud_1):
-    distance = geopy.distance.vincenty((latitud, longitud), (latitud_1, longitud_1))
+    distance = geopy.distance.geodesic((latitud, longitud), (latitud_1, longitud_1))
     return distance.meters
 
 def calc_nearest_station(list_stations,longitud, latitud):
     nearestDistance = sys.float_info.max  #Valor por defecto
     nearestStation = ''
     for station in list_stations:
-        currentDistance = geopy.distance.vincenty((latitud, longitud), (station['lat'], station['long']))
+        currentDistance = geopy.distance.geodesic((latitud, longitud), (station['lat'], station['long']))
         if currentDistance < nearestDistance:
             nearestDistance = currentDistance
             nearestStation = station

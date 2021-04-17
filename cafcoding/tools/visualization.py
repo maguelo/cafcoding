@@ -21,7 +21,7 @@ def plot_correlation(corr, colormap="YlGnBu", figsize=(12, 10), title=None):
 
     plt.show()
 
-def plot_differences(y_test, y_pred, plot_percent=None,title=None,label=None, normalize=True):
+def plot_differences(y_test, y_pred, plot_percent=None,title=None,label=None, normalize=True, absolute= False):
     if plot_percent is None:
         plot_percent=1.0
     
@@ -37,6 +37,9 @@ def plot_differences(y_test, y_pred, plot_percent=None,title=None,label=None, no
     if normalize:
         data/=max(max(y_test[:LIMIT_PLOT]),max(y_pred[:LIMIT_PLOT]))
     
+    if absolute:
+        data = np.absolute(data)
+        
     plt.plot(range(len(y_test)),data, label= label)
     plt.title(title)
     plt.legend()

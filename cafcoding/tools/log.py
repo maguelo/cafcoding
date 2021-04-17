@@ -1,5 +1,6 @@
 from cafcoding import constants
 
+
 import functools
 import logging
 import os, sys
@@ -13,7 +14,7 @@ def get_logger(log_file_name=constants.LOG_FILE,log_dir=constants.LOG_DIR):
 
     # Create logger object and set the format for logging and other attributes
     #logger = logging.Logger(log_file_name)
-    logger = logging.getLogger('ETL')
+    logger = logging.getLogger(constants.LOGGER_ID)
     logger.setLevel(logging.DEBUG)
     
 
@@ -34,7 +35,7 @@ def log_decorator(func):
     
     def log_decorator_wrapper(self, *args, **kwargs):
         # Build logger object
-        logger = logging.getLogger('ETL')
+        logger = logging.getLogger(constants.LOGGER_ID)
         logger.debug(f"{func} START")
         
         value = func(self, *args, **kwargs)
