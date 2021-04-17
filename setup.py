@@ -6,7 +6,7 @@
 from setuptools import setup
 
 setup(name='cafcoding',
-      version='1.1.1',
+      version='1.1.2',
       description='Cafcoding libraries',
       author='Cafcoding',
       author_email='',

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-def plot_correlation(corr, colormap="YlGnBu", figsize=(12, 10), title=None):
+def plot_correlation(corr, colormap="YlGnBu", title=None,figsize=(12, 10), filename=None):
     if colormap is None:
         colormap= "YlGnBu"
     
@@ -18,10 +18,12 @@ def plot_correlation(corr, colormap="YlGnBu", figsize=(12, 10), title=None):
     # Draw the heatmap with the mask and correct aspect ratio
     sns.heatmap(corr, mask=mask,vmin = 0.0, vmax=1.0, center=0.5,
                 linewidths=.1, cmap=colormap, cbar_kws={"shrink": .8})
-
+    
+    if filename:
+        plt.savefig(filename, format='jpeg')
     plt.show()
 
-def plot_differences(y_test, y_pred, plot_percent=None,title=None,label=None, normalize=True, absolute= False):
+def plot_differences(y_test, y_pred, plot_percent=None,title=None,label=None, normalize=True, absolute= False, figsize=(12, 10),filename=None):
     if plot_percent is None:
         plot_percent=1.0
     
@@ -39,16 +41,18 @@ def plot_differences(y_test, y_pred, plot_percent=None,title=None,label=None, no
     
     if absolute:
         data = np.absolute(data)
-        
+
+    plt.figure(figsize=figsize)
     plt.plot(range(len(y_test)),data, label= label)
     plt.title(title)
     plt.legend()
-    
+    if filename:
+        plt.savefig(filename, format='jpeg')
     plt.show()
     
 
 
-def plot_two_series(serie1, serie2,label1, label2, title=None, plot_percent=None, normalize=True):
+def plot_two_series(serie1, serie2,label1, label2, title=None, plot_percent=None, normalize=True, figsize=(12, 10),filename=None):
     if plot_percent is None:
         plot_percent=1.0
     
@@ -64,12 +68,27 @@ def plot_two_series(serie1, serie2,label1, label2, title=None, plot_percent=None
         data1/=max(max(serie1[:LIMIT_PLOT]),max(serie2[:LIMIT_PLOT]))
         data2/=max(max(serie1[:LIMIT_PLOT]),max(serie2[:LIMIT_PLOT]))
     
-
+    plt.figure(figsize=figsize)
     plt.plot(range(len(data1)),data1,label=label1)
     plt.plot(range(len(data2)),data2,label=label2)
     plt.title(title)
     plt.legend()
     
+    if filename:
+        plt.savefig(filename, format='jpeg')
     plt.show()
     
+def plot_history_model(history, metrics, title, figsize=(12, 10),  filename=None):
+    plt.figure(figsize=figsize)
+    for key in metrics:
+        plt.plot(history[key])    
+        
+    plt.title(title)
     
+    plt.ylabel('value')
+    plt.xlabel('epoch')    
+    plt.legend(metrics, loc='upper left')
+    if filename:
+        plt.savefig(filename, format='jpeg')
+    
+    plt.show()
