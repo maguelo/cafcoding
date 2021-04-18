@@ -6,7 +6,7 @@
 from setuptools import setup
 
 setup(name='cafcoding',
-      version='1.2.0',
+      version='1.2.1',
       description='Cafcoding libraries',
       author='Cafcoding',
       author_email='',
@@ -18,6 +18,7 @@ setup(name='cafcoding',
                         's3fs',
                         'numpy',
                         'pandas',
-                        'seaborn'],
+                        'seaborn',
+                        'pandarallel'],
       dependency_links=['http://github.com/tkrajina/srtm.py/tarball/master#egg=srtm.py-0.3.7']
       )

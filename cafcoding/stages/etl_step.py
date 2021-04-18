@@ -3,13 +3,18 @@ from cafcoding.tools import meteo
 from cafcoding.tools import log
 from cafcoding import constants
 
+from pandarallel import pandarallel
+
 import pandas as pd
 import srtm
 import numpy as np
 import logging 
 logger = logging.getLogger(constants.LOGGER_ID)
 
-ETL_VERSION = "1.2.0"
+pandarallel.initialize()
+
+
+ETL_VERSION = "1.2.1"
 
 ABS_COLUMNS = ['TCU1_Axle1Speed','TCU1_Axle2Speed','TCU1_ElecEffApp',
     'TCU2_Axle1Speed','TCU2_Axle2Speed','TCU2_ElecEffApp',
@@ -30,7 +35,7 @@ SHIFT_COLUMNS = ['TCU1_LinePowerConsumed','TCU1_LinePowerDissipated', 'TCU1_Line
 TRAIN_REMOVE_AT_STOP_WINDOW = 5
 
 @log.log_decorator
-def process_etl(df, df_meteo, del_stopped_train=True, columns_to_abs=ABS_COLUMNS, columns_to_shift=SHIFT_COLUMNS, fill_delta= True):
+def process_etl(df, df_meteo, del_stopped_train=True, columns_to_abs=ABS_COLUMNS, columns_to_shift=SHIFT_COLUMNS, fill_delta= False):
     
     df= prepare_data_time(df)
     date_range = {'min': df['ts_date'].min(), 'max': df['ts_date'].max()}
@@ -55,6 +60,9 @@ def process_etl(df, df_meteo, del_stopped_train=True, columns_to_abs=ABS_COLUMNS
     # Cuidado realizamos un fill_dataframe_by_ut aplicando delta
     df = generate_auxiliar_columns(df,delta)
 
+    if del_stopped_train:
+        df = delete_stopped_train(df)
+    
     # Funciones de contexto fisico
     df = etl.column_to_absolute(df,columns_to_abs)
     df = etl.create_shifts(df,columns_to_shift)
@@ -64,11 +72,7 @@ def process_etl(df, df_meteo, del_stopped_train=True, columns_to_abs=ABS_COLUMNS
 
 
     df = etl.fill_dataframe_by_ut(df)
-
-
-    if del_stopped_train:
-        df = delete_stopped_train(df)
-        
+    
     return df
 
 @log.log_decorator
@@ -180,26 +184,55 @@ def generate_auxiliar_columns(df,delta):
 
 #Removing Stopped Rows
 
-last_slope_value = np.nan
-nan_counter = 0
+# last_slope_value = np.nan
+# nan_counter = 0
+
+# @log.log_decorator
+# def slope_conditional_nan_fill():
+#   if nan_counter > TRAIN_REMOVE_AT_STOP_WINDOW:
+#     return np.nan
+#   else:
+#     nan_counter += 1
+#     return last_slope_value
+
+# def record_entries(slope):
+#   last_slope_value = slope
+#   nan_counter = 0
+#   return slope
+
+# def delete_stopped_train(df):
+#    df['percent_slope'] = df.apply(lambda r: record_entries(r['percent_slope']) if r['percent_slope'] != np.nan else slope_conditional_nan_fill(), axis=1) 
+#    df = df.dropna(how='any', axis=0)
+#    return df
 
 @log.log_decorator
-def slope_conditional_nan_fill():
-  if nan_counter > TRAIN_REMOVE_AT_STOP_WINDOW:
-    return np.nan
-  else:
-    nan_counter += 1
-    return last_slope_value
+def delete_stopped_train(df , windows_size=10, col_target='PLC_Speed'):
+    def is_train_stopped(row, target_value):
+        return (row == target_value).all()
 
-def record_entries(slope):
-  last_slope_value = slope
-  nan_counter = 0
-  return slope
+    windows_target = [col_target+'_'+str(period) for period in range(windows_size+1)]
+    target_values = [ 0.0 for col in windows_target]
 
-def delete_stopped_train(df):
-   df['percent_slope'] = df.apply(lambda r: record_entries(r['percent_slope']) if r['percent_slope'] != np.nan else slope_conditional_nan_fill(), axis=1) 
-   df = df.dropna(how='any', axis=0)
-   return df
+    list_ut_df = []
+    for ut in df['ut'].unique():
+        df_ut = df[df['ut']==ut].copy()
+        
+        for period,col in enumerate(windows_target):
+            df_ut[col]=df_ut[col_target].shift(periods=period)
+
+        # Eliminamos datos sucios, a mayor tamano de ventana mayor perdida de datos
+        df_ut=df_ut[windows_size:]
+        
+        df_ut['train_stopped']= df_ut.parallel_apply(lambda row:is_train_stopped(row[windows_target], target_values),axis=1)
+        df_ut= df_ut[df_ut['train_stopped']==False]
+        
+
+        list_ut_df.append(df_ut)
+
+    df= pd.concat(list_ut_df)
+    df.drop(windows_target+['train_stopped'],axis=1,inplace=True)
+    
+    return df
 
 @log.log_decorator
 def create_categorical(df, ignore_columns= ['ut','ts_date']):

@@ -56,7 +56,7 @@ def calculate_percent_slope(altitude, prev_altitude, distance):
 
 def column_to_absolute(df,columns, drops_original = True):
     """
-    Esta funcià¸£à¸“n crea columna de valores absolutos y da la opcion de borrar la original
+    Esta funcion crea columna de valores absolutos y da la opcion de borrar la original
     """
     if columns is None:
         columns = []
