@@ -145,6 +145,7 @@ def train_model(train_data, val_data, params, model_conf, filename = None):
     history =model.fit(x=X_train, y=y_train,
             callbacks=callback_list,
             validation_data=(X_val, y_val),
-            epochs=model_conf['model'].get('epochs',200), batch_size=params.get("batch_size",64))
+            epochs=model_conf.get('epochs',200), 
+            batch_size=params.get("batch_size",64))
 
     return history, early_stopping.best
