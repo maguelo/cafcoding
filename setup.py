@@ -15,10 +15,10 @@ setup(name='cafcoding',
       install_requires=['geopy',
                         'colorlog',
                         'srtm.py',
-                        #'s3fs',
+                        's3fs',
                         'numpy',
                         'pandas',
-                        #'seaborn',
+                        'seaborn',
                         'pandarallel'],
       dependency_links=['http://github.com/tkrajina/srtm.py/tarball/master#egg=srtm.py-0.3.7']
       )
