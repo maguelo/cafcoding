@@ -135,7 +135,7 @@ def train_model(train_data, val_data, params, model_conf, filename = None):
     # compile the model using mean absolute percentage error as our loss,
     # implying that we seek to minimize the absolute percentage difference
     # between our target *predictions* and the *actual prices*
-    optimizer = RMSprop(lr=params["lr"], rho=0.9, epsilon=None, decay=params["decay"])
+    opt = RMSprop(lr=params["lr"], rho=0.9, epsilon=None, decay=params["decay"])
     #opt = Adam(lr=params["lr"], decay=params["decay"])
     model.compile(loss=model_conf['model'].get('loss_func',"mean_absolute_percentage_error"), 
                   optimizer=opt,
