@@ -65,8 +65,9 @@ def plot_two_series(serie1, serie2,label1, label2, title=None, plot_percent=None
     data2 = serie2[:LIMIT_PLOT]
     
     if normalize:
-        data1/=max(max(serie1[:LIMIT_PLOT]),max(serie2[:LIMIT_PLOT]))
-        data2/=max(max(serie1[:LIMIT_PLOT]),max(serie2[:LIMIT_PLOT]))
+        max_value=max(max(data1),max(data2))
+        data1/=max_value
+        data2/=max_value
     
     plt.figure(figsize=figsize)
     plt.plot(range(len(data1)),data1,label=label1)
