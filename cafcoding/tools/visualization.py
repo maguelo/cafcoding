@@ -43,7 +43,7 @@ def plot_differences(y_test, y_pred, plot_percent=None,title=None,label=None, no
         data = np.absolute(data)
 
     plt.figure(figsize=figsize)
-    plt.plot(range(len(y_test)),data, label= label)
+    plt.plot(range(len(data)),data, label= label)
     plt.title(title)
     plt.legend()
     if filename:
