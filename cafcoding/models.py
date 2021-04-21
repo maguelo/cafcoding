@@ -10,6 +10,8 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam,RMSprop
 
+from keras import regularizers
+
 
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.preprocessing import MinMaxScaler
@@ -73,7 +75,7 @@ def prepare_dataset(data, ignored_columns, target, columns_drops=None, list_ut=N
         return X[kfold,:],  y[kfold], features
     return X,  y, features
 
-def create_model(input_dim, layers, dropout=None, batch_normalization = False, regress=False):
+def create_model(input_dim, layers, dropout=None, batch_normalization = False, regress=False, func_act='relu', func_regress='linear'):
     # define our MLP network
     logger.info("Create model")
     logger.debug(f'input_dim: {input_dim}')
@@ -85,35 +87,68 @@ def create_model(input_dim, layers, dropout=None, batch_normalization = False, r
     dropout = 0.0 if dropout is None else dropout
 
     model = Sequential()
-    model.add(Dense(layers[0], input_dim=input_dim, activation="relu"))
+    model.add(Dense(layers[0], 
+                    input_dim=input_dim, activation=func_act,
+                    kernel_initializer='random_normal',
+                    bias_initializer='zeros'))
     for layer in layers[1:]:
         if dropout:
             model.add(Dropout(dropout))
         if batch_normalization:
             model.add(BatchNormalization())
-        model.add(Dense(layer, activation="relu"))
+        model.add(Dense(layer, activation=func_act))
 
     if regress:
-        model.add(Dense(1, activation="linear"))
+        model.add(Dense(1, activation=func_regress))
     else:
         model.add(Dense(1, activation="sigmoid"))
     return model
 
+def create_model_functional(input_dim, layers, dropout=None, batch_normalization = False, regress=False, func_act='relu', func_regress='linear'):
+    # define our MLP network
+    logger.info("Create model")
+    logger.debug(f'input_dim: {input_dim}')
+    logger.debug(f'layers: {layers}')
+    logger.debug(f'dropout: {dropout}')
+    logger.debug(f'batch_normalization: {batch_normalization}')
+    logger.debug(f'regress: {regress}')
+    logger.debug(f'func_act: {func_act}')
+    logger.debug(f'func_regress: {func_regress}')
+
+    dropout = 0.0 if dropout is None else dropout
+
+    x = Input(shape=(input_dim,))
+    hide = Dense(layers[0], activation=func_act)(x)
+    for layer in layers[1:]:
+        if dropout:
+            hide=Dropout(dropout)(hide)
+        if batch_normalization:
+            hide=BatchNormalization()(hide)
+        hide=Dense(layer, activation=func_act)(hide)
+
+    if regress:
+        y= Dense(1, activation=func_regress)(hide)
+    else:
+        y =Dense(1, activation="sigmoid")(hide)
+        
+    model = Model(x, y)
+    return model
 
 
-    
-
-def train_model(train_data, val_data, params, model_conf, filename = None):
+def train_model_dl(train_data, val_data, params, model_conf, filename = None):
     logger.debug('Train model - params: {}'.format(str(params)))
     logger.debug('Train model - model_conf: {}'.format(str(model_conf)))
                  
     X_train, y_train = train_data
     X_val, y_val = val_data
-    model = create_model(X_train.shape[1], 
+    model = create_model_functional(X_train.shape[1], 
                          params['layers'], 
                          dropout=params.get('dropout',0.0), 
                          batch_normalization=params.get('batch_normalization',False),
-                         regress=True)
+                         regress=True,
+                         func_act=params.get('func_act', 'relu'),
+                         func_regress=params.get('func_regress', 'linear'))
+    model.summary()
     
     callback_list = []
 
@@ -135,8 +170,8 @@ def train_model(train_data, val_data, params, model_conf, filename = None):
     # compile the model using mean absolute percentage error as our loss,
     # implying that we seek to minimize the absolute percentage difference
     # between our target *predictions* and the *actual prices*
-    opt = RMSprop(lr=params["lr"], rho=0.9, epsilon=None, decay=params["decay"])
-    #opt = Adam(lr=params["lr"], decay=params["decay"])
+#     opt = RMSprop(lr=params["lr"], rho=0.9, epsilon=None, decay=params["decay"])
+    opt = Adam(lr=params["lr"], decay=params["decay"])
     model.compile(loss=model_conf['model'].get('loss_func',"mean_absolute_percentage_error"), 
                   optimizer=opt,
                   metrics=model_conf['model'].get('metrics',None))
@@ -148,6 +183,7 @@ def train_model(train_data, val_data, params, model_conf, filename = None):
             callbacks=callback_list,
             validation_data=(X_val, y_val),
             epochs=model_conf.get('epochs',200), 
-            batch_size=params.get("batch_size",64))
+            batch_size=params.get("batch_size",64),
+            verbose= model_conf['model'].get('verbose',1))
 
-    return history, early_stopping.best
+    return history, early_stopping.best, model
