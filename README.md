@@ -1,11 +1,17 @@
 # cafcoding
 
-## To Install
+## PPT Resumen práctica
+/PPT Entrega práctica
+
+## Data Visualization with D3.js
+https://codepen.io/danielvillalba/full/oNBqLpM
+
+## To Install the Library
 
 pip install git+https://github.com/maguelo/cafcoding.git#egg=cafcoding
 
 
-## Generate aws creedentials
+## How to Generate aws creedentials
 
 import cafcoding.tools.aws as aws
 
@@ -15,6 +21,6 @@ amazon.generate_session_file('s3', key_id, secret_key ,'eu-west-1')
 
 !cat "PATH DE VUESTRO EQUIPO/awscli.ini"
 
-### Activamos las credenciales
+### Creedentials Activation
 
 amazon.set_credentials_in_env()
