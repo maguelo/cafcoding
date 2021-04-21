@@ -14,7 +14,7 @@ logger = logging.getLogger(constants.LOGGER_ID)
 pandarallel.initialize()
 
 
-ETL_VERSION = "1.2.1"
+ETL_VERSION = "1.2.2"
 
 ABS_COLUMNS = ['TCU1_Axle1Speed','TCU1_Axle2Speed','TCU1_ElecEffApp',
     'TCU2_Axle1Speed','TCU2_Axle2Speed','TCU2_ElecEffApp',
@@ -176,34 +176,13 @@ def generate_auxiliar_columns(df,delta):
 
     columns_to_drop = ['Norte', 'Este', 'Nearest_Station',
                    'Direction', 'estacion', 'fecha', 'wind_vmax_3s', 'wind_vmean_10m', 'wind_direction_10m',
-                   'wind_max_direction_60m', 'tia', 'tmin', 'tmax', 'Latitud-1', 'Longitud-1', 'Latitud', 'Longitud', 'altitude-1']
+                   'wind_max_direction_60m', 'tia', 'tmin', 'tmax', 'Latitud-1', 'Longitud-1',  'altitude-1'] #'Latitud', 'Longitud'
 
     df.drop(columns_to_drop, axis=1, inplace=True)
     
     return df
 
-#Removing Stopped Rows
 
-# last_slope_value = np.nan
-# nan_counter = 0
-
-# @log.log_decorator
-# def slope_conditional_nan_fill():
-#   if nan_counter > TRAIN_REMOVE_AT_STOP_WINDOW:
-#     return np.nan
-#   else:
-#     nan_counter += 1
-#     return last_slope_value
-
-# def record_entries(slope):
-#   last_slope_value = slope
-#   nan_counter = 0
-#   return slope
-
-# def delete_stopped_train(df):
-#    df['percent_slope'] = df.apply(lambda r: record_entries(r['percent_slope']) if r['percent_slope'] != np.nan else slope_conditional_nan_fill(), axis=1) 
-#    df = df.dropna(how='any', axis=0)
-#    return df
 
 @log.log_decorator
 def delete_stopped_train(df , windows_size=10, col_target='PLC_Speed'):
