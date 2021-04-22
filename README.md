@@ -6,6 +6,9 @@
 ## Data Visualization with D3.js
 https://codepen.io/danielvillalba/full/oNBqLpM
 
+## Trello Scrum Metodology
+https://trello.com/b/PCLD5j59/scrum-board
+
 ## To Install the Library
 
 pip install git+https://github.com/maguelo/cafcoding.git#egg=cafcoding
